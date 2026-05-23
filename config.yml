@@ -1,0 +1,61 @@
+# Subtitulos-pro Configuration
+
+# Whisper transcription settings
+whisper:
+  model: "small"  # tiny, base, small, medium, large
+  device: "auto"  # auto, cuda, cpu
+  language: "auto"  # auto, es, en, etc.
+  compute_type: "float16"  # float16, int8, float32
+
+# Subtitle styling
+subtitle:
+  style: "modern"  # modern, bold, neon, minimal, classic
+  font_size: 48
+  font: "Arial Black"
+  color: "#FFFFFF"
+  highlight_color: "#FFD700"
+  background_color: "#000000"
+  background_opacity: 0.0
+  position: "bottom"  # bottom, center, top
+  margin_bottom: 150
+  animation_speed: 0.3  # seconds
+  word_highlight: true
+  zoom_effect: true
+  stroke_width: 6
+  stroke_color: "#000000"
+  show_only_current_word: true
+
+# Video processing
+video:
+  output_format: "mp4"
+  video_codec: "libx264"
+  audio_codec: "aac"
+  quality: "high"  # low, medium, high
+  preset: "medium"  # ultrafast, superfast, veryfast, faster, fast, medium, slow, slower, veryslow
+  crf: 23  # Constant Rate Factor (0-51, lower is better)
+
+# Processing settings
+processing:
+  temp_dir: "temp"
+  output_dir: "output"
+  cache_enabled: true
+  cleanup_temp: true
+  detect_silence: true
+  silence_threshold: -40  # dB
+  min_word_duration: 0.1  # seconds
+
+# UI settings
+ui:
+  theme: "dark"
+  window_width: 1400
+  window_height: 900
+  preview_enabled: true
+  auto_play_result: true
+  language: "es"  # es, en
+
+# Logging
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+  file: "logs/subtitulos.log"
+  max_bytes: 10485760  # 10MB
+  backup_count: 5
