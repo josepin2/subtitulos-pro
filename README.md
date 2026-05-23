@@ -163,4 +163,4 @@ MIT License — Copyright (c) 2026 José M.C.
 **José M.C.**
 - GitHub: [@josepin2](https://github.com/josepin2)
 
-Hecho con ❤️ para creadores de contenido.
+Hecho por JMC 2026
