@@ -1,17 +1,23 @@
 """
-Descarga el modelo Whisper small para Subtitulos-pro.
+Descarga el modelo Whisper "small" (~700 MB) para Subtitulos-pro.
 
-El modelo (600 MB aprox) se guarda en models/whisper/ y se reutiliza
-en cada ejecucion. No necesitas internet despues de la descarga inicial.
+El modelo small es el que la aplicacion usa por defecto.
+Se guarda en models/whisper/ y se reutiliza en cada ejecucion.
+No necesitas internet despues de la descarga inicial.
 
 Uso:
     python download_model.py
 """
 import os
+import sys
 from pathlib import Path
 
 # Asegurar que estamos en la carpeta del proyecto
 os.chdir(Path(__file__).parent.resolve())
+
+# Nombre del modelo por defecto (coincide con config.yml y main.py)
+MODELO_POR_DEFECTO = "small"
+TAMANO_APROX = "~700 MB"
 
 # Configurar carpeta del modelo
 model_dir = Path("models/whisper")
@@ -21,19 +27,21 @@ os.environ["HF_HUB_CACHE"] = str(model_dir.resolve())
 os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
 
 print(f"\n{'='*55}")
-print(f"  Subtitulos-pro - Descargar modelo Whisper small")
+print(f"  Subtitulos-pro - Descargar modelo Whisper")
 print(f"{'='*55}")
-print(f"\nDestino: {model_dir.resolve()}")
+print(f"\n  Modelo: {MODELO_POR_DEFECTO} ({TAMANO_APROX})")
+print(f"  Destino: {model_dir.resolve()}")
 print()
 
 try:
     from faster_whisper import WhisperModel
-    print("Descargando modelo 'small' desde HuggingFace (~600 MB)...")
-    print("(Esto puede tomar varios minutos dependiendo de tu conexion)")
+
+    print(f"Descargando '{MODELO_POR_DEFECTO}' desde HuggingFace...")
+    print("(Esto puede tomar varios minutos segun tu conexion)")
     print()
 
     model = WhisperModel(
-        "small",
+        MODELO_POR_DEFECTO,
         device="cpu",
         compute_type="float32",
         download_root=str(model_dir.resolve()),
@@ -41,7 +49,7 @@ try:
     )
 
     print(f"\n{'='*55}")
-    print(f"  [OK] Modelo 'small' descargado correctamente")
+    print(f"  [OK] Modelo '{MODELO_POR_DEFECTO}' descargado correctamente")
     print(f"  Ruta: {model_dir.resolve()}")
     print(f"{'='*55}")
     print()

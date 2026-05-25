@@ -28,52 +28,47 @@ Procesamiento 100% **local** con Whisper AI, sin necesidad de conexión a intern
 | Programa | Por qué |
 |---|---|
 | **Python 3.9+** | Lenguaje base del proyecto |
-| **FFmpeg** | Procesamiento de audio y vídeo |
+| **FFmpeg** | Procesamiento de audio y vídeo (descarga: [ffmpeg.org](https://ffmpeg.org)) |
 | **(Opcional) NVIDIA GPU + CUDA** | Aceleración por hardware |
 
-### 1. Clonar el repositorio
+### En Windows — Instalación en 2 pasos
 
 ```bash
+# 1. Clonar y abrir carpeta
 git clone https://github.com/josepin2/subtitulos-pro.git
-cd subt-tulos-Pro
+cd subtitulos-pro
+
+# 2. Ejecutar el instalador (descarga modelo + instala dependencias)
+download_model.bat
 ```
 
-### 2. Crear entorno virtual
+O simplemente haz doble clic en **`download_model.bat`**. Este script:
+1. Verifica que Python esté instalado
+2. Ejecuta `pip install -r requirements.txt` (instala todas las librerías)
+3. Descarga el modelo Whisper **small** (~700 MB, el que usa la app por defecto)
+
+### En macOS / Linux
 
 ```bash
-# Windows
-python -m venv .venv
-.venv\Scripts\activate
+# 1. Clonar
+git clone https://github.com/josepin2/subtitulos-pro.git
+cd subtitulos-pro
 
-# macOS / Linux
-python3 -m venv .venv
-source .venv/bin/activate
+# 2. Instalar dependencias
+pip3 install -r requirements.txt
+
+# 3. Descargar modelo Whisper
+python3 download_model.py
 ```
 
-### 3. Instalar dependencias
+### Ejecutar
 
 ```bash
-pip install -r requirements.txt
-```
-
-### 4. Descargar modelo Whisper (opcional, se descarga automáticamente)
-
-Si prefieres descargar el modelo antes de usar la app:
-
-```bash
-python download_model.py
-```
-
-O haz doble clic en `download_model.bat` (Windows).
-
-### 5. ¡Ejecutar!
-
-```bash
-# Desde la terminal
-python main.py
-
-# O haz doble clic (Windows)
+# Windows: haz doble clic en run.bat
 run.bat
+
+# O desde la terminal:
+python main.py
 ```
 
 ## 🎯 Uso rápido
