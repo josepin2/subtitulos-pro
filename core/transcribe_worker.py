@@ -71,8 +71,8 @@ def main():
             break
 
     if comm_dir is None:
-        # Fallback: usar argumentos posicionales (modo legacy)
-        error_file = Path(os.environ.get("TEMP", ".")) / "subtitulos_worker_error.json"
+        # Fallback portable: tempfile.gettempdir() funciona en cualquier SO
+        error_file = Path(tempfile.gettempdir()) / "subtitulos_worker_error.json"
         try:
             error_file.write_text(
                 json.dumps({"type": "error", "message": "No comm-dir specified"}) + "\n",
@@ -108,11 +108,9 @@ def main():
     # La ruta exacta del modelo nos la pasa el proceso principal en el config.json
     whisper_cache = config.get("whisper_cache_dir", "")
     if not whisper_cache:
-        # Fallback: calcular según el modo de ejecución
-        if getattr(sys, 'frozen', False):
-            whisper_cache = str(Path(sys.executable).parent / "models" / "whisper")
-        else:
-            whisper_cache = str(Path(__file__).parent.parent / "models" / "whisper")
+        # Fallback portable: relativo al project root
+        from core.utils import resolve_project_path
+        whisper_cache = str(resolve_project_path("models/whisper"))
     os.environ["HF_HOME"] = whisper_cache
     os.environ["HF_HUB_CACHE"] = whisper_cache
     os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
@@ -151,10 +149,11 @@ def main():
 
         model_name = config.get("whisper_model", "small")
 
-        # Configurar directorios
+        # Configurar directorios (rutas relativas al project root, portables)
+        from core.utils import resolve_project_path
         temp_dir = Path(config.get("temp_dir", "temp"))
         if not temp_dir.is_absolute():
-            temp_dir = Path(__file__).parent.parent / temp_dir
+            temp_dir = resolve_project_path(str(temp_dir))
 
         processing_config = ProcessingConfig(
             temp_dir=temp_dir,
@@ -164,7 +163,7 @@ def main():
         )
 
         style_config = SubtitleStyleConfig.from_dict(config.get("subtitle", {}))
-        style_config.show_only_current_word = True
+        # show_only_current_word se respeta desde la configuración del usuario
 
         # ================================================================
         # ESCALA DE PROGRESO UNIFICADA (MONOTÓNICA, 0-100):

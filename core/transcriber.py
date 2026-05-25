@@ -17,23 +17,21 @@ from models.subtitle import (
     WordTimestamp,
     ProcessingConfig
 )
+from core.utils import resolve_project_path, get_project_root
 
 
 logger = logging.getLogger(__name__)
 
 
-# Ruta de caché local para modelos Whisper
+# Ruta de caché local para modelos Whisper (PORTÁTIL)
 # Prioridad:
 # 1. Variable de entorno HF_HOME (usada por el worker con Python del sistema)
-# 2. PyInstaller frozen: junto al .exe
-# 3. Desarrollo: ruta relativa al proyecto
+# 2. Ruta relativa al project root (funciona en cualquier SO, sin rutas absolutas)
 _hf_home_env = os.environ.get("HF_HOME") or os.environ.get("HF_HUB_CACHE")
 if _hf_home_env:
     WHISPER_CACHE_DIR = Path(_hf_home_env)
-elif getattr(sys, 'frozen', False):
-    WHISPER_CACHE_DIR = Path(sys.executable).parent / "models" / "whisper"
 else:
-    WHISPER_CACHE_DIR = Path(__file__).parent.parent / "models" / "whisper"
+    WHISPER_CACHE_DIR = resolve_project_path("models/whisper")
 logger.info(f"WHISPER_CACHE_DIR = {WHISPER_CACHE_DIR}")
 
 

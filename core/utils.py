@@ -11,6 +11,48 @@ from pathlib import Path
 from typing import Optional, List, Tuple
 import yaml
 
+# Cache global del project root para evitar recalcularlo
+_PROJECT_ROOT: Optional[Path] = None
+
+
+def get_project_root() -> Path:
+    """
+    Obtiene la raíz del proyecto de forma PORTABLE.
+    Funciona en cualquier SO sin rutas absolutas hardcodeadas:
+    - En desarrollo: detecta la ubicación de este archivo (utils.py está en core/)
+    - En PyInstaller: usa sys._MEIPASS
+    - Siempre devuelve un Path absoluto válido
+
+    Returns:
+        Path absoluto a la raíz del proyecto
+    """
+    global _PROJECT_ROOT
+    if _PROJECT_ROOT is not None:
+        return _PROJECT_ROOT
+
+    if getattr(sys, 'frozen', False):
+        # PyInstaller: el directorio temporal donde se extrajo el ejecutable
+        _PROJECT_ROOT = Path(sys._MEIPASS)
+    else:
+        # En desarrollo: subimos de core/ a la raíz del proyecto
+        _PROJECT_ROOT = Path(__file__).parent.parent.resolve()
+
+    return _PROJECT_ROOT
+
+
+def resolve_project_path(relative_path: str) -> Path:
+    """
+    Resuelve una ruta relativa contra la raíz del proyecto.
+    No depende del Current Working Directory (CWD).
+
+    Args:
+        relative_path: Ruta relativa (ej: "temp", "output", "models/whisper")
+
+    Returns:
+        Path absoluto dentro del proyecto
+    """
+    return get_project_root() / relative_path
+
 
 logger = logging.getLogger(__name__)
 

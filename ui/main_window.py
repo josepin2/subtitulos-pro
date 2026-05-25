@@ -23,7 +23,9 @@ from core.utils import (
     load_config, check_ffmpeg_installed,
     check_gpu_available,
     validate_video_file,
-    format_duration
+    format_duration,
+    resolve_project_path,
+    get_project_root,
 )
 
 
@@ -71,8 +73,8 @@ class ProcessingThread(QThread):
 
         self.status_update.emit("Iniciando procesamiento...")
 
-        project_dir = Path(__file__).parent.parent.resolve()
-        model_cache_dir = project_dir / "models" / "whisper"
+        project_dir = get_project_root()
+        model_cache_dir = resolve_project_path("models/whisper")
 
         try:
             # --- Crear directorio de comunicación ---
@@ -277,7 +279,7 @@ class MainWindow(QMainWindow):
 
     def _load_configuration(self) -> Dict[str, Any]:
         """Load application configuration."""
-        config_path = Path(__file__).parent.parent / "config.yml"
+        config_path = resolve_project_path("config.yml")
         return load_config(config_path)
 
     def _setup_ui(self):
@@ -449,7 +451,7 @@ class MainWindow(QMainWindow):
 
     def _apply_stylesheet(self):
         """Apply QSS stylesheet."""
-        style_path = Path(__file__).parent / "style.qss"
+        style_path = resolve_project_path("ui/style.qss")
         if style_path.exists():
             with open(style_path, 'r', encoding='utf-8') as f:
                 self.setStyleSheet(f.read())
@@ -548,8 +550,8 @@ class MainWindow(QMainWindow):
             # Enable generate button
             self.generate_btn.setEnabled(True)
 
-            # Set default output path
-            output_dir = Path(self.config.get('processing', {}).get('output_dir', 'output'))
+            # Set default output path (portable: relativo al project root)
+            output_dir = resolve_project_path(self.config.get('processing', {}).get('output_dir', 'output'))
             output_dir.mkdir(parents=True, exist_ok=True)
             self.output_path = output_dir / f"{video_path.stem}_subtitled.mp4"
 
@@ -582,29 +584,32 @@ class MainWindow(QMainWindow):
             'language': 'auto',
             'subtitle': {
                 'style': 'modern',
-                'font_size': 48,
+                'font_size': 64,
+                'font': 'Roboto',
+                'color': '#FFEB3B',
+                'highlight_color': '#FFFFFF',
                 'position': 'bottom',
                 'word_highlight': True,
                 'zoom_effect': True,
                 'background_opacity': 0.0,
-                'stroke_width': 6,
+                'stroke_width': 8,
                 'stroke_color': '#000000',
-                'show_only_current_word': True
+                'show_only_current_word': False
             },
             'video': {
                 'quality': 'high'
             },
             'temp_dir': 'temp',
-            'output_dir': self.output_path_label.text() if self.output_path_label.text() != "Por defecto (carpeta output)" else 'output',
+            'output_dir': self.output_path_label.text() if self.output_path_label.text() != "Por defecto (carpeta output)" else str(resolve_project_path("output")),
             'cache_enabled': True,
             'cleanup_temp': True
         }
 
-        # Determine output path
+        # Determine output path (portable: relativo al project root, no al CWD)
         if self.output_path_label.text() != "Por defecto (carpeta output)":
             output_dir = Path(self.output_path_label.text())
         else:
-            output_dir = Path('output')
+            output_dir = resolve_project_path("output")
 
         output_dir.mkdir(parents=True, exist_ok=True)
         output_path = output_dir / f"{self.video_path.stem}_subtitled.mp4"
@@ -682,7 +687,7 @@ class MainWindow(QMainWindow):
         if self.output_path and self.output_path.exists():
             QDesktopServices.openUrl(QUrl.fromLocalFile(str(self.output_path.parent)))
         else:
-            output_dir = Path(self.config.get('processing', {}).get('output_dir', 'output'))
+            output_dir = resolve_project_path(self.config.get('processing', {}).get('output_dir', 'output'))
             if output_dir.exists():
                 QDesktopServices.openUrl(QUrl.fromLocalFile(str(output_dir)))
 

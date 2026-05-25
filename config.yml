@@ -10,20 +10,20 @@ whisper:
 # Subtitle styling
 subtitle:
   style: "modern"  # modern, bold, neon, minimal, classic
-  font_size: 48
-  font: "Arial Black"
-  color: "#FFFFFF"
-  highlight_color: "#FFD700"
+  font_size: 64
+  font: "Roboto"
+  color: "#FFEB3B"
+  highlight_color: "#FFFFFF"
   background_color: "#000000"
   background_opacity: 0.0
   position: "bottom"  # bottom, center, top
-  margin_bottom: 150
+  margin_bottom: 120
   animation_speed: 0.3  # seconds
   word_highlight: true
   zoom_effect: true
-  stroke_width: 6
+  stroke_width: 8
   stroke_color: "#000000"
-  show_only_current_word: true
+  show_only_current_word: false
 
 # Video processing
 video:

@@ -2,7 +2,10 @@
 title Subtitulos-pro - Descargar modelo Whisper
 cd /d "%~dp0"
 
-call .venv\Scripts\activate.bat
+REM Activar entorno virtual si existe (instalación portable)
+if exist ".venv\Scripts\activate.bat" (
+    call .venv\Scripts\activate.bat
+)
 
 echo ========================================
 echo  Subtitulos-pro

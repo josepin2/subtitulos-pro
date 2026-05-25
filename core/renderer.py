@@ -3,6 +3,7 @@ Subtitle rendering module with word-by-word animations.
 """
 import logging
 import math
+import platform
 from pathlib import Path
 from typing import List, Tuple, Optional, Dict
 import numpy as np
@@ -86,16 +87,39 @@ class FontManager:
             self.font_cache[cache_key] = font
             return font
         except OSError:
-            # Fallback fonts by OS
-            fallback_fonts = [
-                "Arial.ttf",
-                "DejaVuSans.ttf",
-                "LiberationSans-Regular.ttf",
-                "NotoSans-Regular.ttf",
-                "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-                "/System/Library/Fonts/Helvetica.ttc",
-                "C:\\Windows\\Fonts\\arial.ttf"
-            ]
+            # --- Fallback portátil: SOLO nombres de fuente (sin rutas absolutas) ---
+            # PIL/ImageFont.truetype busca en el sistema por nombre en cualquier SO.
+            # Ordenamos por popularidad para minimizar intentos fallidos.
+            system = platform.system()
+
+            # Fuentes prioritarias según el sistema operativo
+            if system == "Windows":
+                os_fonts = [
+                    "Segoe UI", "Segoe UI Bold", "Roboto", "Arial",
+                    "Microsoft Sans Serif", "Tahoma"
+                ]
+            elif system == "Darwin":  # macOS
+                os_fonts = [
+                    "Helvetica", "Helvetica Neue", "SF Pro Display",
+                    "SF Pro Text", "Arial", "Roboto"
+                ]
+            else:  # Linux y otros
+                os_fonts = [
+                    "DejaVuSans", "DejaVu Sans", "LiberationSans",
+                    "Liberation Sans", "NotoSans", "Noto Sans",
+                    "FreeSans", "Arial"
+                ]
+
+            # Fuentes universales que funcionan en casi cualquier SO
+            universal_fonts = ["Arial", "Roboto", "DejaVuSans"]
+
+            # Combinar: primero las del SO, luego universales
+            seen = set()
+            fallback_fonts = []
+            for f in os_fonts + universal_fonts:
+                if f not in seen:
+                    seen.add(f)
+                    fallback_fonts.append(f)
 
             for fallback in fallback_fonts:
                 try:
@@ -318,7 +342,12 @@ class TextRenderer:
     ) -> Tuple[int, int]:
         """
         Dibuja líneas de subtítulos animados ya calculadas (sin re-split).
-        Útil para mantener consistencia con el cálculo previo de dimensiones.
+        Sistema LEGIBLE Y SUAVE:
+          - Palabra activa: ligeramente más brillante (como si se iluminara)
+          - Palabras pasadas: color normal (mismo tono, legibles)
+          - Palabras futuras: atenuadas (se ven pero no distraen)
+          - SIN zoom, SIN barras, SIN cambios de color bruscos
+        Solo 1 línea visible: los ojos no saltan entre líneas.
 
         Args:
             draw: ImageDraw object
@@ -343,7 +372,8 @@ class TextRenderer:
             # Centrar línea horizontalmente
             line_x = x0 + (max_width - line_width) // 2 if line_width < max_width else x0
 
-            for offset_x, word_w, word_h, w_info in line_words:
+            # Dibujar palabras: sin zoom, un solo tamaño, solo varía el brillo
+            for offset_x, word_w, word_h_local, w_info in line_words:
                 word_x = line_x + offset_x
                 word_y = current_y
 
@@ -351,28 +381,23 @@ class TextRenderer:
                 is_past = current_time > w_info.end
 
                 if is_active and config.word_highlight:
-                    color = config.highlight_color
-                    scale = 1.1 if config.zoom_effect else 1.0
+                    # Activa: ligeramente más brillante (se ilumina suavemente)
+                    base = ColorUtils.hex_to_rgb(config.color)
+                    brighter = ColorUtils.adjust_brightness(base, 1.15)
+                    color = ColorUtils.rgb_to_hex(brighter)
                 elif is_past:
+                    # Pasada: color normal, legible
                     color = config.color
-                    scale = 1.0
                 else:
-                    base_color = ColorUtils.hex_to_rgb(config.color)
-                    dimmed_color = ColorUtils.adjust_brightness(base_color, 0.5)
-                    color = ColorUtils.rgb_to_hex(dimmed_color)
-                    scale = 1.0
+                    # Futura: atenuada para no distraer
+                    base = ColorUtils.hex_to_rgb(config.color)
+                    dimmed = ColorUtils.adjust_brightness(base, 0.50)
+                    color = ColorUtils.rgb_to_hex(dimmed)
 
-                font_size_scaled = int(config.font_size * scale)
-                if scale > 1.0:
-                    scaled_w, scaled_h = self.measure_text(
-                        w_info.word, config.font, font_size_scaled
-                    )
-                    word_x = word_x - (scaled_w - word_w) // 2
-                    word_y = word_y - (scaled_h - word_h) // 2
-
+                # Sin zoom: todas las palabras al mismo tamaño
                 self.draw_text_with_effects(
                     draw, w_info.word, (word_x, word_y),
-                    config.font, font_size_scaled, color,
+                    config.font, config.font_size, color,
                     stroke_width=config.stroke_width,
                     stroke_color=config.stroke_color,
                     glow=(config.style == SubtitleStyle.NEON and is_active),
@@ -428,7 +453,7 @@ class FrameRenderer:
         self.font_manager = FontManager()
         self.text_renderer = TextRenderer(self.font_manager)
 
-    MAX_LINES = 1  # Máximo de líneas visibles siempre
+    MAX_LINES = 1  # Solo 1 línea: la mirada no se dispersa entre líneas
 
     def render_frame(
         self,
@@ -450,9 +475,10 @@ class FrameRenderer:
         width, height = video_size
         reference_height = 1080
 
-        # --- Escalar font_size ---
-        scaled = max(12, int(self.config.font_size * height / reference_height))
-        effective_font_size = min(self.config.font_size, scaled)
+        # --- Escalar font_size proporcionalmente a la altura del vídeo ---
+        # Para vídeos verticales (1080x1920) la altura es 1920, el font escala hacia ARRIBA.
+        # Antes había un `min()` que lo capaba al tamaño base, impediendo el escalado vertical.
+        effective_font_size = max(16, int(self.config.font_size * height / reference_height))
 
         import copy
         render_config = copy.copy(self.config)
@@ -694,13 +720,16 @@ class SubtitleRenderer:
 
         presets = {
             SubtitleStyle.MODERN: {
-                "font": "Arial Black",
-                "font_size": 48,
-                "color": "#FFFFFF",
-                "highlight_color": "#FFD700",
-                "stroke_width": 3,
+                "font": "Roboto",
+                "font_size": 64,
+                "color": "#FFEB3B",
+                "highlight_color": "#FFFFFF",
+                "stroke_width": 8,
+                "stroke_color": "#000000",
                 "word_highlight": True,
-                "zoom_effect": True
+                "zoom_effect": True,
+                "show_only_current_word": False,
+                "background_opacity": 0.0,
             },
             SubtitleStyle.BOLD: {
                 "font": "Impact",

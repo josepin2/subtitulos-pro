@@ -197,20 +197,20 @@ class SubtitleTrack:
 class SubtitleStyleConfig:
     """Configuration for subtitle styling."""
     style: SubtitleStyle = SubtitleStyle.MODERN
-    font_size: int = 48
-    font: str = "Arial Black"
-    color: str = "#FFFFFF"
-    highlight_color: str = "#FFD700"
+    font_size: int = 64
+    font: str = "Roboto"
+    color: str = "#FFEB3B"
+    highlight_color: str = "#FFFFFF"
     background_color: str = "#000000"
     background_opacity: float = 0.0
     position: str = "bottom"  # bottom, center, top
-    margin_bottom: int = 150
+    margin_bottom: int = 120
     animation_speed: float = 0.3
     word_highlight: bool = True
     zoom_effect: bool = True
-    stroke_width: int = 6
+    stroke_width: int = 8
     stroke_color: str = "#000000"
-    show_only_current_word: bool = True
+    show_only_current_word: bool = False
 
     def to_dict(self) -> dict:
         """Convert to dictionary."""
@@ -238,20 +238,20 @@ class SubtitleStyleConfig:
         style = SubtitleStyle(data.get("style", "modern"))
         return cls(
             style=style,
-            font_size=data.get("font_size", 48),
-            font=data.get("font", "Arial Black"),
-            color=data.get("color", "#FFFFFF"),
-            highlight_color=data.get("highlight_color", "#FFD700"),
+            font_size=data.get("font_size", 64),
+            font=data.get("font", "Roboto"),
+            color=data.get("color", "#FFEB3B"),
+            highlight_color=data.get("highlight_color", "#FFFFFF"),
             background_color=data.get("background_color", "#000000"),
             background_opacity=data.get("background_opacity", 0.0),
             position=data.get("position", "bottom"),
-            margin_bottom=data.get("margin_bottom", 150),
+            margin_bottom=data.get("margin_bottom", 120),
             animation_speed=data.get("animation_speed", 0.3),
             word_highlight=data.get("word_highlight", True),
             zoom_effect=data.get("zoom_effect", True),
-            stroke_width=data.get("stroke_width", 6),
+            stroke_width=data.get("stroke_width", 8),
             stroke_color=data.get("stroke_color", "#000000"),
-            show_only_current_word=data.get("show_only_current_word", True)
+            show_only_current_word=data.get("show_only_current_word", False)
         )
 
 

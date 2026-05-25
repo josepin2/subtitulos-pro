@@ -309,9 +309,10 @@ def run_cli_mode(args, config):
         SubtitleStyleConfig()
     )
 
-    # Create processing config
+    # Create processing config (rutas relativas al project root, no al CWD)
+    from core.utils import resolve_project_path
     processing_config = ProcessingConfig(
-        temp_dir=Path("temp"),
+        temp_dir=resolve_project_path("temp"),
         output_dir=output_path.parent,
         cache_enabled=True,
         cleanup_temp=True
