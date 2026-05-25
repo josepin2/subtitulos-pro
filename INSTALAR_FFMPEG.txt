@@ -1,0 +1,77 @@
+═══════════════════════════════════════════════════════════
+  INSTALAR FFMPEG EN WINDOWS PARA SUBTÍTULOS-PRO
+═══════════════════════════════════════════════════════════
+
+La aplicación necesita FFmpeg para procesar audio y vídeo.
+Sigue estos pasos:
+
+───────────────────────────────────────────────────────────
+  1. DESCARGAR FFMPEG
+───────────────────────────────────────────────────────────
+
+Enlace directo (build completo, ~130 MB):
+  https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-full.7z
+
+Si ese enlace no funciona, ve a:
+  https://www.gyan.dev/ffmpeg/builds/
+Y descarga "ffmpeg-release-full.7z"
+
+───────────────────────────────────────────────────────────
+  2. EXTRAER EL ARCHIVO
+───────────────────────────────────────────────────────────
+
+Necesitas 7-Zip (gratuito) para abrir archivos .7z:
+  https://7-zip.org
+
+Extrae el contenido en una carpeta como:
+  C:\ffmpeg
+
+Te tiene que quedar así:
+  C:\ffmpeg\bin\ffmpeg.exe
+  C:\ffmpeg\bin\ffplay.exe
+  C:\ffmpeg\bin\ffprobe.exe
+
+───────────────────────────────────────────────────────────
+  3. AÑADIR FFMPEG AL PATH (VARIABLES DE ENTORNO)
+───────────────────────────────────────────────────────────
+
+MÉTODO A — Desde PowerShell (RECOMENDADO):
+  Abre PowerShell como ADMINISTRADOR y pega:
+
+  [Environment]::SetEnvironmentVariable("Path", [Environment]::GetEnvironmentVariable("Path", "Machine") + ";C:\ffmpeg\bin", "Machine")
+
+
+MÉTODO B — Manual:
+  1. Abre "Editar las variables de entorno del sistema"
+     (búsquedalo en el menú Inicio)
+  2. Haz clic en "Variables de entorno"
+  3. En "Variables del sistema", busca "Path", selecciónalo
+     y haz clic en "Editar"
+  4. Haz clic en "Nuevo" y pega:  C:\ffmpeg\bin
+  5. Acepta todo
+
+───────────────────────────────────────────────────────────
+  4. VERIFICAR QUE FUNCIONA
+───────────────────────────────────────────────────────────
+
+Abre una NUEVA terminal (CMD o PowerShell) y escribe:
+
+  ffmpeg -version
+
+Si ves información de FFmpeg, está listo. Si no, reinicia
+el ordenador o cierra sesión y vuelve a abrir.
+
+───────────────────────────────────────────────────────────
+  5. PROBLEMAS COMUNES
+───────────────────────────────────────────────────────────
+
+"ffmpeg no se reconoce como un comando..."
+  → No está en el PATH. Revisa los pasos 3 y 4.
+
+"El archivo no se puede abrir..."
+  → Descarga 7-Zip desde https://7-zip.org
+
+"No tengo permisos de administrador"
+  → Pídele a alguien con admin que ejecute el PowerShell
+     de arriba, o extrae FFmpeg en tu carpeta de usuario
+     y añade la ruta manualmente (Método B sin admin).
